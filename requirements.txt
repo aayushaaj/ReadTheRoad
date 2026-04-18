@@ -1,0 +1,23 @@
+# Core ML
+torch
+torchvision
+torchaudio
+transformers
+scikit-learn
+
+# Data
+pandas
+numpy
+matplotlib
+seaborn
+Pillow
+
+# Notebook
+jupyter
+jupyterlab
+ipywidgets
+ipykernel
+
+# Utilities
+tqdm
+python-dotenv
