@@ -1,0 +1,17 @@
+services:
+  dev:
+    build: .
+    image: aayusha123/readtheroad-dev
+    container_name: readtheroad-dev
+    ports:
+      - "8888:8888" # Jupyter
+    volumes:
+      - ./src:/app/src # live code sync
+      - ./data:/app/data # datasets
+      - ./models:/app/models # saved checkpoints
+    environment:
+      - PYTHONPATH=/app
+    env_file:
+      - .env # API keys, secrets
+
+    restart: unless-stopped
