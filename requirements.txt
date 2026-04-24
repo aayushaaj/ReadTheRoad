@@ -4,6 +4,8 @@ torchvision
 torchaudio
 transformers
 scikit-learn
+opencv-python-headless
+ultralytics
 
 # Data
 pandas
@@ -21,3 +23,7 @@ ipykernel
 # Utilities
 tqdm
 python-dotenv
+
+#ocr
+paddlepaddle
+paddleocr
