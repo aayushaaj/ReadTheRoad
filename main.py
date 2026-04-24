@@ -1,11 +1,24 @@
+import os
 from ingestion.video_feed import frame
+from ocr.licensePlate import LicensePlateDetection, PaddleInference
+from ocr.vehicleDetection import VehicleDetection
+from ultralytics import YOLO
 import cv2
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(script_dir, 'models/license_plate.pt')
 
 cap = cv2.VideoCapture(0)
+LPD = LicensePlateDetection(model_path)
+PI = PaddleInference()
 
 for frames in frame(cap):
-    #print("Motion Detected")
-    cv2.imshow("Frame", frames)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    coords = LPD.license_coordinates(frames)
+    if coords is None:
+        continue  # Skip this frame if no plate detected
+
+    x1, y1, x2, y2 = coords
+    plate_img = LPD.crop_into_plate(frames, x1, y1, x2, y2)
+    res = PI.ocr_inference(plate_img)
+
+    print(res)

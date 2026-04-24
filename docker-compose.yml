@@ -3,12 +3,11 @@ services:
     build: .
     image: aayusha123/readtheroad-dev
     container_name: readtheroad-dev
-    ports:
-      - "8888:8888" # Jupyter
     volumes:
-      - ./src:/app/src # live code sync
-      - ./data:/app/data # datasets
-      - ./models:/app/models # saved checkpoints
+      - ./ingestion:/app/ingestion # ingestion code
+      - ./ocr:/app/ocr # ocr code
+      - ./models:/app/models
+      - ./main.py:/app/main.py
     environment:
       - PYTHONPATH=/app
     env_file:
