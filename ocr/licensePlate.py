@@ -3,7 +3,6 @@ from ultralytics import YOLO
 import cv2
 import numpy as np
 from paddleocr import PaddleOCR
-
 class LicensePlateDetection :
     def __init__ (self, yolo_path) :
         self.model = YOLO(yolo_path)
