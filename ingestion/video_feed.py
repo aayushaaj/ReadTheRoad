@@ -1,42 +1,51 @@
 import cv2
 import time
-from ingestion.detect_motion import detect_motion
 
-# Threshold for motion detection
-THRESHOLD = 7
-# Time to wait after motion is detected
-CAPTURE_DELAY = 1.5
-#Cooldown before detecting motion again
-COOLDOWN = 3
+
+object_detector = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=16)
+
+
+def calculate_sharpness(img):
+    #Calculates the Laplacian variance to measure blurriness
+    return cv2.Laplacian(img, cv2.CV_64F).var()
 
 def frame(cap) :
-    last_motion_time = 0
-    prev_frame = None
-    motion_detected_time = None
+    # Threshold for motion detection
+    THRESHOLD = 100
+    best_frame = None
+    max_score = -1
+    frames_since_motion = 0
+    COOLDOWN_LIMIT = 10
 
-    while True : 
+    while cap.isOpened():
         ret, frame = cap.read()
-
-        if not ret :
-            print("Capture Failed")
-            break
+        if not ret:
+            return
         
-        grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        mask = object_detector.apply(frame)
 
-        if prev_frame is None :
-            prev_frame = grey
-            continue
+        contours, _ =cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        active_motion = False
 
-        motion = detect_motion(prev_frame, grey, THRESHOLD)
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if area > THRESHOLD:
+                active_motion = True
+                score = calculate_sharpness(frame)
+                final_score = score * area
 
-        now = time.time()
+                if final_score > max_score:
+                    max_score = final_score
+                    best_frame = frame.copy()
+                
+                frames_since_motion = 0
+        
+        if active_motion and best_frame is not None:
+            frames_since_motion = frames_since_motion + 1
 
-        if motion and motion_detected_time is None and ((now - last_motion_time) > COOLDOWN):
-            motion_detected_time = now
-            
-        if motion_detected_time is not None and ((now - motion_detected_time) >= CAPTURE_DELAY):
-            last_motion_time = now
-            motion_detected_time = None
-            yield frame
-            
-        prev_frame = grey
+            if frames_since_motion > COOLDOWN_LIMIT:
+                yield best_frame
+                best_frame = None
+                max_score = -1
+
+
