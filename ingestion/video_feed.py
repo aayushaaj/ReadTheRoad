@@ -16,14 +16,20 @@ def frame(cap) :
     max_score = -1
     frames_since_motion = 0
     COOLDOWN_LIMIT = 10
+    frame_count = 0
+    WARMUP_FRAMES = 100
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
+            print("\n\n Video ended.")
             return
         
+        frame_count += 1
         mask = object_detector.apply(frame)
-
+        if frame_count < WARMUP_FRAMES:
+            continue
+        
         contours, _ =cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         active_motion = False
 
@@ -37,15 +43,14 @@ def frame(cap) :
                 if final_score > max_score:
                     max_score = final_score
                     best_frame = frame.copy()
-                
-                frames_since_motion = 0
         
-        if active_motion and best_frame is not None:
+        if not active_motion and best_frame is not None:
             frames_since_motion = frames_since_motion + 1
 
             if frames_since_motion > COOLDOWN_LIMIT:
                 yield best_frame
                 best_frame = None
                 max_score = -1
+                frames_since_motion=0
 
 
