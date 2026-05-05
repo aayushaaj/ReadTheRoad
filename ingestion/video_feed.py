@@ -2,12 +2,11 @@ import cv2
 import time
 
 
-object_detector = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=16)
-
+object_detector = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=16,detectShadows=False)
 
 def calculate_sharpness(img):
-    #Calculates the Laplacian variance to measure blurriness
-    return cv2.Laplacian(img, cv2.CV_64F).var()
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return float(cv2.Laplacian(gray, cv2.CV_64F).var())
 
 def frame(cap) :
     # Threshold for motion detection
@@ -22,7 +21,7 @@ def frame(cap) :
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
-            print("\n\n Video ended.")
+            print("Video ended.")
             return
         
         frame_count += 1
@@ -54,3 +53,5 @@ def frame(cap) :
                 frames_since_motion=0
 
 
+
+         
